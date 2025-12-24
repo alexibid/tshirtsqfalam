@@ -1,6 +1,7 @@
 import { View, TouchableOpacity, Image, Text, Animated, Easing } from "react-native";
-import { User, Shirt, Wand2, ShoppingCart } from "lucide-react-native";
+import { User as UserIcon, Shirt, Wand2, ShoppingCart } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
+import { User } from "@supabase/supabase-js";
 
 interface NavigationProps {
   onAccountPress: () => void;
@@ -10,6 +11,9 @@ interface NavigationProps {
   onCheckoutPress: () => void;
   hasDesign?: boolean;
   highlightedCorner?: "account" | "select" | "logo" | "create" | "order" | null;
+  user: User | null;
+  selectedGarment: "tshirt" | "sweatshirt" | "hoodie";
+  selectedColor: string;
 }
 
 export function Navigation({ 
@@ -19,7 +23,10 @@ export function Navigation({
   onCreatePress, 
   onCheckoutPress, 
   hasDesign,
-  highlightedCorner
+  highlightedCorner,
+  user,
+  selectedGarment,
+  selectedColor
 }: NavigationProps) {
   
   // Standardized button style - now w-full h-full to fill the anchor container
@@ -30,6 +37,14 @@ export function Navigation({
 
   const iconSize = 24;
   const iconColor = "#000000";
+
+  // Dynamic values
+  const userAvatar = user?.user_metadata?.avatar_url;
+  
+  // Garment Icon Logic
+  // Maintain stroke color for contrast if white
+  const garmentFill = selectedColor;
+  const garmentStroke = selectedColor === "#ffffff" ? "#94a3b8" : selectedColor; // slate-400 for white border
 
   // Tutorial State
   const [showTutorial, setShowTutorial] = useState(true);
@@ -71,8 +86,7 @@ export function Navigation({
   const wrapStyle = "items-center justify-center w-20 h-20"; 
   const anchorStyle = "relative w-14 h-14"; // Exact button size anchor
 
-  // Tutorial Overlay Component
-  // Positioned relative  // Tutorial Overlay Component with BEM Naming
+  // Tutorial Overlay Component with BEM Naming
   const TutorialOverlay = ({ index, label, number }: { index: number, label: string, number: string }) => {
     if (!showTutorial) return null;
 
@@ -121,8 +135,13 @@ export function Navigation({
           <TouchableOpacity 
             className={`nav__button ${buttonStyle} ${getHighlightClass("account")}`}
             onPress={onAccountPress}
+            style={{ overflow: 'hidden' }} // Ensure rounded image clips
           >
-            <User color={iconColor} size={iconSize} />
+            {userAvatar ? (
+               <Image source={{ uri: userAvatar }} className="w-full h-full" resizeMode="cover" />
+            ) : (
+               <UserIcon color={iconColor} size={iconSize} />
+            )}
           </TouchableOpacity>
           <TutorialOverlay index={0} number="1º" label="LOGIN" />
         </View>
@@ -135,7 +154,7 @@ export function Navigation({
             className={`nav__button ${buttonStyle} ${getHighlightClass("select")}`}
             onPress={onSelectPress}
           >
-            <Shirt color={iconColor} size={iconSize} />
+            <Shirt stroke={garmentStroke} fill={garmentFill} size={iconSize} />
           </TouchableOpacity>
           <TutorialOverlay index={1} number="2º" label="SELECIONA" />
         </View>

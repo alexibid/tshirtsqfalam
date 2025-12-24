@@ -71,15 +71,15 @@ export function CornerModal({ visible, onClose, position, children, title }: Cor
   };
 
   return (
-    <View className="absolute inset-0 z-50 pointer-events-auto">
+    <View className="modal absolute inset-0 z-50 pointer-events-auto">
        {/* Backdrop */}
       <TouchableWithoutFeedback onPress={onClose}>
-        <Animated.View style={{ opacity, flex: 1, backgroundColor: 'rgba(255,255,255,0.95)' }} />
+        <Animated.View className="modal__backdrop" style={{ opacity, flex: 1, backgroundColor: 'rgba(255,255,255,0.95)' }} />
       </TouchableWithoutFeedback>
 
       {/* The Expanding Modal Content */}
       <View 
-        className="absolute pointer-events-none" 
+        className="modal__positioner absolute pointer-events-none" 
         style={{ 
           top: 32, // top-8
           bottom: 96, // bottom-24
@@ -91,6 +91,7 @@ export function CornerModal({ visible, onClose, position, children, title }: Cor
       >
         <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
          <Animated.View 
+            className="modal__content"
             style={{ 
               transform: [
                 { scale },
@@ -100,35 +101,44 @@ export function CornerModal({ visible, onClose, position, children, title }: Cor
               opacity,
               width: '100%',
               height: '100%',
-              justifyContent: 'center',
-              alignItems: 'center',
-              borderRadius: 30, // Matches expected curvature
-              backgroundColor: 'white', // Ensure background is white as it's a card
-              // Added Box Shadow
+              // Removed justify-center to allow explicit control with padding/flex
+              borderRadius: 30, 
+              backgroundColor: 'white', 
               shadowColor: "#000",
-              shadowOffset: {
-                width: 0,
-                height: 5,
-              },
+              shadowOffset: { width: 0, height: 5 },
               shadowOpacity: 0.35,
               shadowRadius: 15,
               elevation: 10,
-              position: 'relative' // Ensure relative positioning for children
+              position: 'relative',
+              paddingHorizontal: 32, // Horizontal padding for all content
+              paddingTop: 80, // Push content down to clear Close Button area (Top-6 is ~24px + 40px height) + Spacing
+              paddingBottom: 32, // Bottom padding
             }}
             pointerEvents="auto"
          >
             {/* Close Button - Top Right of the Card */}
-            <View className="absolute top-6 right-6 z-[60]">
+            <View className="modal__close-container absolute top-6 right-6 z-[60]">
                <TouchableOpacity 
                  onPress={onClose} 
-                 className="w-10 h-10 bg-black rounded-full items-center justify-center shadow-md elevation-5"
+                 className="modal__close w-10 h-10 bg-black rounded-full items-center justify-center shadow-md elevation-5"
                >
                  <LogOut color="white" size={18} />
                </TouchableOpacity>
             </View>
 
-            {title && <Text className="text-3xl font-black mb-8 uppercase tracking-tighter text-black">{title}</Text>}
-            {children}
+            {/* Title - Static at top of content flow, but pushed down by paddingTop */}
+            {title && (
+              <View className="absolute top-8 left-8 right-16 justify-center">
+                 <Text className="modal__title text-3xl font-black uppercase tracking-tighter text-black" numberOfLines={1} adjustsFontSizeToFit>
+                   {title}
+                 </Text>
+              </View>
+            )}
+
+            {/* Content Container - Vertically Centered */}
+            <View className="modal__body flex-1 w-full justify-center">
+               {children}
+            </View>
          </Animated.View>
         </TouchableWithoutFeedback>
       </View>

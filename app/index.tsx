@@ -1,22 +1,59 @@
-import { useState } from "react";
-import { View, Image, Text } from "react-native";
+import { useState, useEffect } from "react";
+import { View, Image, Text, TouchableOpacity } from "react-native";
+import { Session } from "@supabase/supabase-js";
+import { supabase } from "../lib/supabase";
 import { Navigation } from "../components/ui/Navigation";
 import { CornerModal } from "../components/ui/CornerModal";
 import { ColorPicker } from "../components/ui/ColorPicker";
 import { GarmentSelector } from "../components/ui/GarmentSelector";
 import { DesignUploader } from "../components/ui/DesignUploader";
 import { ExamplesGallery } from "../components/ui/ExamplesGallery";
+import { LogOut } from "lucide-react-native";
 
 export default function Page() {
   const [activeModal, setActiveModal] = useState<"account" | "select" | "create" | "order" | "gallery" | null>(null);
   const [selectedColor, setSelectedColor] = useState("#ffffff");
   const [selectedGarment, setSelectedGarment] = useState<"tshirt" | "sweatshirt" | "hoodie">("tshirt");
   
+  // Auth State
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(false);
+
   // Design Generation State
   const [generatedImage, setGeneratedImage] = useState<any>(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   const handleClose = () => setActiveModal(null);
+
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin, // For Web
+        // skipBrowserRedirect: true // For Mobile (requires linking)
+      }
+    });
+    if (error) console.error("Error logging in:", error.message);
+    setLoading(false);
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setActiveModal(null);
+  };
 
   const handleGenerateDesign = (prompt: string) => {
     setIsGenerating(true);
@@ -31,11 +68,11 @@ export default function Page() {
   };
 
   return (
-    <View className="flex-1 bg-white items-center relative">
-      <View className="flex-1 w-full h-full max-w-screen-md relative">
+    <View className="page flex-1 bg-white items-center relative">
+      <View className="page__container flex-1 w-full h-full max-w-screen-md relative">
         
         {/* Footer */}
-        <View className="absolute bottom-6 left-0 right-0 items-center z-40" style={{ marginBottom: 25 }}>
+        <View className="page__footer absolute bottom-6 left-0 right-0 items-center z-40" style={{ marginBottom: 25 }}>
           <View className="flex-row gap-4">
              <Text className="text-xs font-medium text-gray-500">QUEM SOMOS</Text>
              <Text className="text-xs font-medium text-gray-500">•</Text>
@@ -46,8 +83,8 @@ export default function Page() {
         </View>
 
         {/* Main Content Area - Garment Preview */}
-        <View className="absolute inset-0 items-center justify-center z-0 pointer-events-none">
-          <View className="w-[80%] h-[60%] items-center justify-center relative">
+        <View className="page__preview absolute inset-0 items-center justify-center z-0 pointer-events-none">
+          <View className="page__preview-content w-[80%] h-[60%] items-center justify-center relative">
             <Image 
               source={
                 selectedGarment === 'tshirt' ? require("../assets/tshirt_mockup.png") :
@@ -58,18 +95,20 @@ export default function Page() {
                 width: '100%', 
                 height: '100%', 
                 resizeMode: 'contain',
-                tintColor: selectedColor !== "#ffffff" ? selectedColor : undefined
+                // usage of tintColor removed due to non-transparent assets causing full-box fill
+                // tintColor: selectedColor !== "#ffffff" ? selectedColor : undefined 
               }}
             />
             {/* Design Placeholder Overlay */}
-            <View className="absolute w-32 h-32 items-center justify-center">
+            <View className="page__design-overlay absolute w-32 h-32 items-center justify-center">
                {generatedImage ? (
                  <Image 
                    source={generatedImage} 
+                   className="page__generated-design"
                    style={{ width: 120, height: 120, resizeMode: 'contain' }} 
                  />
                ) : (
-                 <View className="border-2 border-dashed border-gray-300 rounded-lg w-full h-full items-center justify-center bg-transparent opacity-50">
+                 <View className="page__design-placeholder border-2 border-dashed border-gray-300 rounded-lg w-full h-full items-center justify-center bg-transparent opacity-50">
                     <Text className="text-xs text-gray-400 font-medium opacity-0">Área de Design</Text>
                  </View>
                )}
@@ -85,6 +124,9 @@ export default function Page() {
           onCreatePress={() => setActiveModal("create")}
           onCheckoutPress={() => setActiveModal("order")}
           highlightedCorner={null}
+          user={session?.user || null}
+          selectedGarment={selectedGarment}
+          selectedColor={selectedColor}
         />
 
         {/* Account Modal (Top Left) */}
@@ -92,12 +134,85 @@ export default function Page() {
           visible={activeModal === "account"}
           onClose={handleClose}
           position="top-left"
-          title="Conta"
+          title={session ? "A Sua Conta" : "Login"}
         >
-          <Text className="text-gray-600 mb-4">Inicie sessão ou registe-se para guardar os seus designs.</Text>
-          <View className="bg-gray-100 p-4 rounded-lg">
-             <Text className="text-gray-400 text-center">Placeholder do Formulário de Login</Text>
-          </View>
+          {session ? (
+            <View className="page__account w-full items-center justify-center flex-1">
+               <View className="w-24 h-24 rounded-full overflow-hidden mb-6 border-4 border-gray-100 shadow-sm">
+                 {session.user.user_metadata.avatar_url ? (
+                   <Image source={{ uri: session.user.user_metadata.avatar_url }} className="w-full h-full" />
+                 ) : (
+                   <View className="w-full h-full bg-gray-200 items-center justify-center">
+                     <Text className="text-3xl font-bold text-gray-500">{session.user.email?.charAt(0).toUpperCase()}</Text>
+                   </View>
+                 )}
+               </View>
+               <Text className="text-2xl font-bold mb-2 text-center text-gray-900">{session.user.user_metadata.full_name || "Olá!"}</Text>
+               <Text className="text-gray-500 text-base mb-8 text-center">{session.user.email}</Text>
+               
+               <TouchableOpacity 
+                 onPress={handleLogout}
+                 className="bg-red-50 px-8 py-4 rounded-2xl flex-row items-center gap-3 border border-red-100 active:bg-red-100 transition-colors w-full max-w-xs justify-center"
+               >
+                  <LogOut size={20} color="#ef4444" />
+                  <Text className="text-red-500 font-bold text-base">Terminar Sessão</Text>
+               </TouchableOpacity>
+            </View>
+          ) : (
+            <View className="page__login w-full max-w-xs mx-auto flex-col gap-4 justify-center flex-1">
+              <Text className="text-gray-500 text-center mb-4 leading-relaxed">
+                Entre para guardar os seus designs e aceder ao histórico de compras.
+              </Text>
+              
+              {/* Google */}
+              <TouchableOpacity 
+                onPress={handleGoogleLogin}
+                disabled={loading}
+                className="bg-white border border-gray-200 rounded-2xl p-4 flex-row items-center px-6 gap-4 shadow-sm active:scale-95 transition-all"
+              >
+                 <Image 
+                   source={{ uri: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/480px-Google_%22G%22_logo.svg.png" }} 
+                   className="w-6 h-6" 
+                   resizeMode="contain"
+                 />
+                 <Text className="font-bold text-gray-800 text-base flex-1 text-center">
+                   {loading ? "A carregar..." : "Continuar com Google"}
+                 </Text>
+              </TouchableOpacity>
+
+              <View className="flex-row items-center gap-4 my-2 opacity-50">
+                 <View className="h-[1px] bg-gray-300 flex-1" />
+                 <Text className="text-xs font-semibold text-gray-400">OU</Text>
+                 <View className="h-[1px] bg-gray-300 flex-1" />
+              </View>
+
+              {/* Instagram (Mock) */}
+              <TouchableOpacity 
+                className="bg-purple-50 border border-purple-100 rounded-2xl p-4 flex-row items-center px-6 gap-4 active:scale-95 transition-all"
+                onPress={() => alert("Login com Instagram em breve!")}
+              >
+                 <Image 
+                   source={{ uri: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Instagram_icon.png/600px-Instagram_icon.png" }} 
+                   className="w-6 h-6" 
+                   resizeMode="contain"
+                 />
+                 <Text className="font-bold text-purple-700 text-base flex-1 text-center">Instagram</Text>
+              </TouchableOpacity>
+
+              {/* WhatsApp (Mock) */}
+               <TouchableOpacity 
+                className="bg-green-50 border border-green-100 rounded-2xl p-4 flex-row items-center px-6 gap-4 active:scale-95 transition-all"
+                onPress={() => alert("Login com WhatsApp em breve!")}
+              >
+                 <Image 
+                   source={{ uri: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/600px-WhatsApp.svg.png" }} 
+                   className="w-6 h-6" 
+                   resizeMode="contain"
+                 />
+                 <Text className="font-bold text-green-700 text-base flex-1 text-center">WhatsApp</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </CornerModal>
 
         {/* Select Modal (Top Right) */}
