@@ -1,6 +1,10 @@
 
-import { View, TouchableOpacity, Text, Image } from "react-native";
+import { View, TouchableOpacity, Text } from "react-native";
 import { ColorPicker } from "./ColorPicker";
+
+import TshirtFront from "../../assets/tshirt_mockup.svg";
+import SweatshirtFront from "../../assets/sweatshirt_mockup.svg";
+import HoodieFront from "../../assets/hoodie_mockup.svg";
 
 export type GarmentType = "tshirt" | "sweatshirt" | "hoodie";
 
@@ -18,10 +22,10 @@ export function GarmentSelector({
   onSelectColor 
 }: GarmentSelectorProps) {
   
-  const garments: { type: GarmentType; label: string; image: any }[] = [
-    { type: "tshirt", label: "T-Shirt", image: require("../../assets/tshirt_mockup.png") },
-    { type: "sweatshirt", label: "Sweatshirt", image: require("../../assets/sweatshirt_mockup.png") }, 
-    { type: "hoodie", label: "Hoodie", image: require("../../assets/hoodie_mockup.png") },
+  const garments: { type: GarmentType; label: string; component: React.FC<any> }[] = [
+    { type: "tshirt", label: "T-Shirt", component: TshirtFront },
+    { type: "sweatshirt", label: "Sweatshirt", component: SweatshirtFront }, 
+    { type: "hoodie", label: "Hoodie", component: HoodieFront },
   ];
 
   return (
@@ -47,10 +51,11 @@ export function GarmentSelector({
                 </View>
               </View>
               
-              <Image 
-                source={item.image} 
-                className="selector__image mb-1"
-                style={{ width: '100%', height: 60, resizeMode: 'contain', opacity: selectedGarment === item.type ? 1 : 0.6 }} 
+              <item.component 
+                width="100%" 
+                height={60} 
+                style={{ marginBottom: 4, opacity: selectedGarment === item.type ? 1 : 0.6 }} 
+                color={selectedColor} // Pass color to preview!
               />
               <Text className={`selector__item-label text-[10px] font-semibold ${selectedGarment === item.type ? "text-black" : "text-gray-400"}`}>
                 {item.label}

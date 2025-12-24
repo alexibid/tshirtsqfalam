@@ -10,11 +10,15 @@ import { DesignUploader } from "../components/ui/DesignUploader";
 import { ExamplesGallery } from "../components/ui/ExamplesGallery";
 import { LogOut } from "lucide-react-native";
 
+import TshirtFront from "../assets/tshirt_mockup.svg";
+import TshirtBack from "../assets/tshirt_mockup_back.svg";
+import SweatshirtFront from "../assets/sweatshirt_mockup.svg";
+import SweatshirtBack from "../assets/sweatshirt_mockup_back.svg";
+import HoodieFront from "../assets/hoodie_mockup.svg";
+import HoodieBack from "../assets/hoodie_mockup_back.svg";
+
 export default function Page() {
   const [activeModal, setActiveModal] = useState<"account" | "select" | "create" | "order" | "gallery" | null>(null);
-  const [selectedColor, setSelectedColor] = useState("#ffffff");
-  const [selectedGarment, setSelectedGarment] = useState<"tshirt" | "sweatshirt" | "hoodie">("tshirt");
-  
   // Auth State
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(false);
@@ -22,32 +26,52 @@ export default function Page() {
   // Design Generation State
   const [generatedImage, setGeneratedImage] = useState<any>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [selectedColor, setSelectedColor] = useState("#ffffff");
+  const [selectedGarment, setSelectedGarment] = useState<"tshirt" | "sweatshirt" | "hoodie">("tshirt");
+  const [currentSide, setCurrentSide] = useState<"front" | "back">("front");
 
+  // Garment Assets
+  const GARMENT_ASSETS = {
+    tshirt: {
+      front: TshirtFront,
+      back: TshirtBack,
+    },
+    sweatshirt: {
+      front: SweatshirtFront,
+      back: SweatshirtBack,
+    },
+    hoodie: {
+      front: HoodieFront,
+      back: HoodieBack,
+    }
+  };
+
+  const CurrentGarment = GARMENT_ASSETS[selectedGarment][currentSide];
+
+  // Helper to close modals
+  const handleClose = () => setActiveModal(null);
+
+  // Auth Handlers
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
-
-    return () => subscription.unsubscribe();
   }, []);
-
-  const handleClose = () => setActiveModal(null);
 
   const handleGoogleLogin = async () => {
     setLoading(true);
     const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: window.location.origin, // For Web
-        // skipBrowserRedirect: true // For Mobile (requires linking)
-      }
+      provider: "google",
     });
-    if (error) console.error("Error logging in:", error.message);
-    setLoading(false);
+
+    if (error) {
+      console.error("Error logging in with Google:", error.message);
+      setLoading(false);
+    }
   };
 
   const handleLogout = async () => {
@@ -73,31 +97,31 @@ export default function Page() {
         
         {/* Footer */}
         <View className="page__footer absolute bottom-6 left-0 right-0 items-center z-40" style={{ marginBottom: 25 }}>
-          <View className="flex-row gap-4">
-             <Text className="text-xs font-medium text-gray-500">QUEM SOMOS</Text>
-             <Text className="text-xs font-medium text-gray-500">•</Text>
-             <Text className="text-xs font-medium text-gray-500">DATA</Text>
-             <Text className="text-xs font-medium text-gray-500">•</Text>
-             <Text className="text-xs font-medium text-gray-500">ONDE ESTAMOS</Text>
-          </View>
+          {/* ... */}
         </View>
 
         {/* Main Content Area - Garment Preview */}
         <View className="page__preview absolute inset-0 items-center justify-center z-0 pointer-events-none">
           <View className="page__preview-content w-[80%] h-[60%] items-center justify-center relative">
-            <Image 
-              source={
-                selectedGarment === 'tshirt' ? require("../assets/tshirt_mockup.png") :
-                selectedGarment === 'sweatshirt' ? require("../assets/sweatshirt_mockup.png") :
-                require("../assets/hoodie_mockup.png")
-              }
-              style={{ 
-                width: '100%', 
-                height: '100%', 
-                resizeMode: 'contain',
-                // usage of tintColor removed due to non-transparent assets causing full-box fill
-                // tintColor: selectedColor !== "#ffffff" ? selectedColor : undefined 
-              }}
+            
+            {/* TOGGLE PILL - SUPERIMPOSED AT TOP OF CONTENT */}
+            <View className="absolute top-0 z-50 pointer-events-auto -translate-y-12">
+               <TouchableOpacity 
+                 onPress={() => setCurrentSide(prev => prev === 'front' ? 'back' : 'front')}
+                 className="bg-white/90 backdrop-blur-md px-6 py-2 rounded-full shadow-sm border border-gray-200 flex-row items-center gap-2"
+               >
+                 <View className="w-4 h-4 border-2 border-gray-600 rounded-full border-t-transparent" style={{ transform: [{ rotate: '-45deg' }] }} />
+                 <Text className="text-xs font-bold text-gray-700 uppercase tracking-widest">
+                    {currentSide === 'front' ? 'FRENTE' : 'COSTAS'}
+                 </Text>
+               </TouchableOpacity>
+            </View>
+
+            <CurrentGarment 
+              width="100%" 
+              height="100%" 
+              style={{ position: 'absolute' }}
+              color={selectedColor}
             />
             {/* Design Placeholder Overlay */}
             <View className="page__design-overlay absolute w-32 h-32 items-center justify-center">
