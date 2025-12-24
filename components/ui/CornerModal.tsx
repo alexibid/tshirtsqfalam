@@ -89,6 +89,7 @@ export function CornerModal({ visible, onClose, position, children, title }: Cor
           justifyContent: 'center' 
         }}
       >
+        <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
          <Animated.View 
             style={{ 
               transform: [
@@ -114,6 +115,7 @@ export function CornerModal({ visible, onClose, position, children, title }: Cor
               elevation: 10,
               position: 'relative' // Ensure relative positioning for children
             }}
+            pointerEvents="auto"
          >
             {/* Close Button - Top Right of the Card */}
             <View className="absolute top-6 right-6 z-[60]">
@@ -128,6 +130,7 @@ export function CornerModal({ visible, onClose, position, children, title }: Cor
             {title && <Text className="text-3xl font-black mb-8 uppercase tracking-tighter text-black">{title}</Text>}
             {children}
          </Animated.View>
+        </TouchableWithoutFeedback>
       </View>
 
       {/* Close Button moved inside content */}

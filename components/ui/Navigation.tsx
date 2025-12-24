@@ -152,11 +152,16 @@ export function Navigation({
               onPress={onLogoPress}
               className={`nav__button nav__button--logo absolute inset-0 items-center justify-center active:scale-95 transition-all ${getHighlightClass("logo")}`}
               style={{ overflow: 'visible' }} 
-              accessibilityRole="header"
-              aria-label="T'shirts Q'falam - Crie a sua T-shirt Personalizada com AI"
             >
+               {/* Semantic H1 for SEO */}
                <View className="absolute inset-0 opacity-0 overflow-hidden w-[1px] h-[1px]">
-                 <Text className="sr-only">T'shirts Q'falam - Crie a sua T-shirt Personalizada com AI</Text>
+                 <Text 
+                   accessibilityRole="header" 
+                   aria-level={1}
+                   className="sr-only"
+                 >
+                   T'shirts Q'falam - Crie a sua T-shirt Personalizada com AI
+                 </Text>
                </View>
 
                {/* Image is larger than the 56px anchor, centered by flex/absolute */}
