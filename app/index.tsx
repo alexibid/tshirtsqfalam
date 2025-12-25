@@ -17,6 +17,9 @@ import SweatshirtBack from "../assets/sweatshirt_mockup_back.svg";
 import HoodieFront from "../assets/hoodie_mockup.svg";
 import HoodieBack from "../assets/hoodie_mockup_back.svg";
 
+import { DraggableResizableDesign } from "../components/ui/DraggableResizableDesign";
+
+
 export default function Page() {
   const [activeModal, setActiveModal] = useState<"account" | "select" | "create" | "order" | "gallery" | null>(null);
   // Auth State
@@ -92,7 +95,7 @@ export default function Page() {
   };
 
   return (
-    <View className="page flex-1 bg-white items-center relative">
+      <View className="page flex-1 bg-white items-center relative">
       <View className="page__container flex-1 w-full h-full max-w-screen-md relative">
         
         {/* Footer */}
@@ -102,7 +105,7 @@ export default function Page() {
 
         {/* Main Content Area - Garment Preview */}
         <View className="page__preview absolute inset-0 items-center justify-center z-0 pointer-events-none">
-          <View className="page__preview-content w-[80%] h-[60%] items-center justify-center relative">
+          <View className="page__preview-content w-[80%] h-[60%] items-center justify-center relative pointer-events-auto">
             
             {/* TOGGLE PILL - SUPERIMPOSED AT TOP OF CONTENT */}
             <View className="absolute top-0 z-50 pointer-events-auto -translate-y-12">
@@ -123,20 +126,22 @@ export default function Page() {
               style={{ position: 'absolute' }}
               color={selectedColor}
             />
-            {/* Design Placeholder Overlay */}
-            <View className="page__design-overlay absolute w-32 h-32 items-center justify-center">
+            {/* Design Placeholder Overlay - Interativa */}
+            <DraggableResizableDesign initialSize={150}>
                {generatedImage ? (
                  <Image 
                    source={generatedImage} 
                    className="page__generated-design"
-                   style={{ width: 120, height: 120, resizeMode: 'contain' }} 
+                   style={{ width: '100%', height: '100%', resizeMode: 'contain' }} 
                  />
                ) : (
-                 <View className="page__design-placeholder border-2 border-dashed border-gray-300 rounded-lg w-full h-full items-center justify-center bg-transparent opacity-50">
-                    <Text className="text-xs text-gray-400 font-medium opacity-0">Área de Design</Text>
+                 <View className="page__design-placeholder border-2 border-dashed border-gray-400/50 rounded-lg w-full h-full items-center justify-center bg-white/10 backdrop-blur-sm">
+                    <Text className="text-[10px] text-gray-500 font-bold uppercase tracking-widest opacity-60 text-center px-2">
+                      Área de Design
+                    </Text>
                  </View>
                )}
-            </View>
+            </DraggableResizableDesign>
           </View>
         </View>
 
@@ -295,7 +300,7 @@ export default function Page() {
             <Text className="text-gray-400">O seu carrinho está vazio.</Text>
           </View>
         </CornerModal>
-      </View>
+        </View>
     </View>
   );
 }
