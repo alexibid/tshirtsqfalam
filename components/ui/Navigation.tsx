@@ -44,7 +44,7 @@ export function Navigation({
   // Garment Icon Logic
   // Maintain stroke color for contrast if white
   const garmentFill = selectedColor;
-  const garmentStroke = selectedColor === "#ffffff" ? "#94a3b8" : selectedColor; // slate-400 for white border
+  const garmentStroke = selectedColor === "#ffffff" ? "#000000" : selectedColor; // slate-400 for white border
 
   // Tutorial State
   const [showTutorial, setShowTutorial] = useState(true);
@@ -179,7 +179,7 @@ export function Navigation({
                    aria-level={1}
                    className="sr-only"
                  >
-                   T'shirts Q'falam - Crie a sua T-shirt Personalizada com AI
+                   T'Shirts Q'Falam - Crie a sua T-shirt Personalizada com AI
                  </Text>
                </View>
 

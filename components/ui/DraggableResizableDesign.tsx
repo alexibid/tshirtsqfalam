@@ -1,20 +1,36 @@
-import React from 'react';
-import { View, Platform } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Platform, Text } from 'react-native';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
-import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
 
 interface DraggableResizableProps {
   children: React.ReactNode;
   initialSize?: number;
+  label?: string;
+  isPlacing?: boolean;
+  isSelected?: boolean;
+  onLock?: () => void;
+  onSelect?: () => void;
 }
 
-export function DraggableResizableDesign({ children, initialSize = 120 }: DraggableResizableProps) {
+export function DraggableResizableDesign({ 
+  children, 
+  initialSize = 120, 
+  label, 
+  isPlacing = false,
+  isSelected = true,
+  onLock,
+  onSelect
+}: DraggableResizableProps) {
   const scale = useSharedValue(1);
   const savedScale = useSharedValue(1);
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
   const savedTranslateX = useSharedValue(0);
   const savedTranslateY = useSharedValue(0);
+
+  // Reset/Effect when isPlacing changes? 
+  // For now we trust parent to mount new component or reset values.
 
   // Pan Gesture (Move)
   const panGesture = Gesture.Pan()
@@ -36,33 +52,46 @@ export function DraggableResizableDesign({ children, initialSize = 120 }: Dragga
       savedScale.value = scale.value;
     });
 
-  // Double Tap (Reset)
+  // Double Tap (Reset or Lock)
   const doubleTapGesture = Gesture.Tap()
     .numberOfTaps(2)
     .onEnd(() => {
-      scale.value = withSpring(1);
-      savedScale.value = 1;
-      translateX.value = withSpring(0);
-      savedTranslateX.value = 0;
-      translateY.value = withSpring(0);
-      savedTranslateY.value = 0;
+      if (isPlacing && onLock) {
+         // Fix position
+         onLock();
+      } else {
+        // Reset Logic
+        scale.value = withSpring(1);
+        savedScale.value = 1;
+        translateX.value = withSpring(0);
+        savedTranslateX.value = 0;
+        translateY.value = withSpring(0);
+        savedTranslateY.value = 0;
+      }
     });
 
-  // Resize Handle Gesture (Bottom Right)
+  // Single Tap (Select)
+  const tapGesture = Gesture.Tap()
+    .onEnd(() => {
+      if (onSelect) onSelect();
+    });
+
+  // Resize Pan (Logic same as before)
   const resizeHandleGesture = Gesture.Pan()
+    .onStart(() => {
+        savedScale.value = scale.value;
+    })
     .onUpdate((e) => {
-      // Calculate growth based on diagonal movement or just X/Y
-      // Simple approach: Use max of translation X/Y relative to roughly 100px base
-      const growth = (e.translationX + e.translationY) / 2;
+      const growth = (e.translationX + e.translationY) / 2; // Diagonal movement
+      // Sensitivity factor
       const scaleFactor = 1 + (growth / 100); 
-      // Limit minimum scale to avoid inversion
       scale.value = Math.max(0.5, savedScale.value * scaleFactor);
     })
     .onEnd(() => {
       savedScale.value = scale.value;
     });
 
-  const composedMain = Gesture.Simultaneous(panGesture, pinchGesture, doubleTapGesture);
+  const composedMain = Gesture.Simultaneous(panGesture, pinchGesture, doubleTapGesture, tapGesture);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [
@@ -73,7 +102,6 @@ export function DraggableResizableDesign({ children, initialSize = 120 }: Dragga
   }));
 
   return (
-    <GestureDetector gesture={composedMain}>
       <Animated.View 
         style={[
           animatedStyle, 
@@ -83,31 +111,49 @@ export function DraggableResizableDesign({ children, initialSize = 120 }: Dragga
             height: initialSize, 
             alignItems: 'center', 
             justifyContent: 'center',
-            zIndex: 100, // Ensure it's above the garment
+            zIndex: isSelected ? 100 : 10, // Active layer on top
             // Web-specific styles for better UX
             ...(Platform.OS === 'web' ? {
-              cursor: 'move',
+              cursor: isPlacing ? 'crosshair' : 'move',
               userSelect: 'none',
               touchAction: 'none'
             } as any : {})
           }
         ]}
       >
-        <View className="w-full h-full border border-dashed border-gray-400/50 rounded-lg overflow-visible relative">
-            {children}
+        <GestureDetector gesture={composedMain}>
+            <View 
+                className={`w-full h-full rounded-lg overflow-visible relative transition-all ${
+                    isSelected 
+                        ? "border-2 border-dashed border-blue-400/80 bg-blue-50/10" 
+                        : "border border-transparent"
+                }`}
+                style={{ opacity: isPlacing ? 0.7 : 1 }}
+            >
+                {/* Label (e.g. #1) */}
+                {label && (
+                    <View className="absolute -top-6 left-0 bg-black/60 px-2 py-1 rounded">
+                        <Text className="text-white text-[10px] font-bold">{label}</Text>
+                    </View>
+                )}
+
+                {children}
+            </View>
+        </GestureDetector>
             
-            {/* Visual Resize Handle (Bottom Right) */}
+        {/* Visual Resize Handle (Bottom Right) - Only if selected and not ghost placing */}
+        {/* Moved OUTSIDE composedMain so touches aren't stolen */}
+        {isSelected && !isPlacing && (
             <GestureDetector gesture={resizeHandleGesture}>
-              <View 
+            <View 
                 className="absolute -bottom-3 -right-3 w-8 h-8 items-center justify-center z-50 rounded-full"
-                containerStyle={{ zIndex: 50 }} // Needed for Gesture Handler to catch touch? Actually View doesn't have containerStyle.
+                // containerStyle={{ zIndex: 50 }} 
                 style={Platform.OS === 'web' ? { cursor: 'nwse-resize' } as any : {}}
-              >
-                 <View className="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-sm" />
-              </View>
+            >
+                <View className="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-sm" />
+            </View>
             </GestureDetector>
-        </View>
+        )}
       </Animated.View>
-    </GestureDetector>
   );
 }

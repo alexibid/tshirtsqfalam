@@ -20,14 +20,25 @@ import HoodieBack from "../assets/hoodie_mockup_back.svg";
 import { DraggableResizableDesign } from "../components/ui/DraggableResizableDesign";
 
 
+// Design Layer Interface
+interface DesignLayer {
+  id: string; 
+  side: "front" | "back";
+  image: any | null;
+  isPlacing: boolean; // "Ghost Mode"
+  label: string;
+}
+
 export default function Page() {
   const [activeModal, setActiveModal] = useState<"account" | "select" | "create" | "order" | "gallery" | null>(null);
   // Auth State
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Design Generation State
-  const [generatedImage, setGeneratedImage] = useState<any>(null);
+  // Design State - Multi-Layer System
+  const [layers, setLayers] = useState<DesignLayer[]>([]);
+  const [activeLayerId, setActiveLayerId] = useState<string | null>(null);
+  
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedColor, setSelectedColor] = useState("#ffffff");
   const [selectedGarment, setSelectedGarment] = useState<"tshirt" | "sweatshirt" | "hoodie">("tshirt");
@@ -82,15 +93,90 @@ export default function Page() {
     setActiveModal(null);
   };
 
+  // Auto-init "Design 1" on mount if empty
+  useEffect(() => {
+      // Only if truly empty to avoid resetting on edits
+      if (layers.length === 0) {
+          const newId = Date.now().toString();
+          setLayers([{
+              id: newId,
+              side: 'front',
+              image: null,
+              isPlacing: false, // Initial one is fixed? Or ghost? user: "start with design 1". Fixed is safer for initial state.
+              label: "Desenho 1"
+          }]);
+          setActiveLayerId(newId);
+      }
+  }, []); // Run once
+
+  // ... (Auth handlers remain)
+
+  // Force Title Match
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.title = "T'Shirts Q'Falam - Crie a sua T-shirt Personalizada com AI";
+    }
+  }, []);
+
+  // Helper: Create new layer
+  const handleAddLayer = () => {
+    const newId = Date.now().toString();
+    const countOnSide = layers.filter(l => l.side === currentSide).length;
+    
+    // Auto-select the new layer
+    setActiveLayerId(newId);
+    
+    setLayers(prev => [...prev, {
+      id: newId,
+      side: currentSide,
+      image: null,
+      isPlacing: false, // Start Fixed (consistent with Design 1)
+      label: `Desenho ${countOnSide + 1}`
+    }]);
+  };
+
+  // Helper: Lock placement
+  const handleLockLayer = (id: string) => {
+    setLayers(prev => prev.map(l => l.id === id ? { ...l, isPlacing: false } : l));
+  };
+  
+  // Helper: Delete layer (optional, maybe long press later)
+  const handleDeleteLayer = (id: string) => {
+    setLayers(prev => prev.filter(l => l.id !== id));
+    if (activeLayerId === id) setActiveLayerId(null);
+  }
+
   const handleGenerateDesign = (prompt: string) => {
     setIsGenerating(true);
     console.log("Generating design with prompt:", prompt);
     
-    // Mock API Call - Replace with Nano Banana Logic later
+    // If no active layer, create one first? Or fail? 
+    // Let's create one if none exists for this side
+    let targetId = activeLayerId;
+    if (!targetId) {
+       // Logic to auto-create? For now let's assume user must select/add one, 
+       // OR we auto-create a layer if empty. Let's auto-create for better UX.
+       const newId = Date.now().toString();
+       const countOnSide = layers.filter(l => l.side === currentSide).length;
+       const newLayer: DesignLayer = {
+           id: newId,
+           side: currentSide, 
+           image: null, 
+           isPlacing: false, // If generated, just place it fixed? Or allow moving?
+           label: `Desenho ${countOnSide + 1}`
+       };
+       setLayers(prev => [...prev, newLayer]);
+       targetId = newId;
+       setActiveLayerId(newId);
+    }
+
+    // Mock API Call
     setTimeout(() => {
-      // For demo, we'll just use the logo or a placeholder as the "generated" design
-      setGeneratedImage(require("../assets/logo.png")); 
+      const mockImage = require("../assets/logo.png");
+      setLayers(prev => prev.map(l => l.id === targetId ? { ...l, image: mockImage } : l));
       setIsGenerating(false);
+      // Close modal if open?
+      setActiveModal(null); 
     }, 2000);
   };
 
@@ -107,15 +193,33 @@ export default function Page() {
         <View className="page__preview absolute inset-0 items-center justify-center z-0 pointer-events-none">
           <View className="page__preview-content w-[80%] h-[60%] items-center justify-center relative pointer-events-auto">
             
-            {/* TOGGLE PILL - SUPERIMPOSED AT TOP OF CONTENT */}
-            <View className="absolute top-0 z-50 pointer-events-auto -translate-y-12">
+            {/* TOP CONTROLS: Toggle Side + Add Layer */}
+            <View className="absolute top-0 z-50 pointer-events-auto -translate-y-12 flex-row items-center gap-3">
+               {/* Toggle Pill - Shows DESTINATION */}
                <TouchableOpacity 
                  onPress={() => setCurrentSide(prev => prev === 'front' ? 'back' : 'front')}
-                 className="bg-white/90 backdrop-blur-md px-6 py-2 rounded-full shadow-sm border border-gray-200 flex-row items-center gap-2"
+                 className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-full shadow-sm border border-gray-200 flex-row items-center gap-2"
                >
-                 <View className="w-4 h-4 border-2 border-gray-600 rounded-full border-t-transparent" style={{ transform: [{ rotate: '-45deg' }] }} />
-                 <Text className="text-xs font-bold text-gray-700 uppercase tracking-widest">
-                    {currentSide === 'front' ? 'FRENTE' : 'COSTAS'}
+                 {/* Icon shows Destination Garment */}
+                 <View className="w-4 h-4 items-center justify-center">
+                    {(() => {
+                        const TargetIcon = GARMENT_ASSETS[selectedGarment][currentSide === 'front' ? 'back' : 'front'];
+                        return <TargetIcon width={16} height={16} color="#4b5563" />;
+                    })()}
+                 </View>
+                 <Text className="text-[10px] font-bold text-gray-700 uppercase tracking-widest">
+                    {currentSide === 'front' ? 'COSTAS' : 'FRENTE'}
+                 </Text>
+               </TouchableOpacity>
+
+               {/* Add Layer Button */}
+               <TouchableOpacity 
+                 onPress={handleAddLayer}
+                 className="bg-black px-4 py-2 rounded-full shadow-sm flex-row items-center gap-2 active:scale-95 transition-transform"
+               >
+                 <Text className="text-white text-lg font-light leading-none mb-[2px]">+</Text>
+                 <Text className="text-[10px] font-bold text-white uppercase tracking-widest">
+                    Desenho
                  </Text>
                </TouchableOpacity>
             </View>
@@ -126,22 +230,33 @@ export default function Page() {
               style={{ position: 'absolute' }}
               color={selectedColor}
             />
-            {/* Design Placeholder Overlay - Interativa */}
-            <DraggableResizableDesign initialSize={150}>
-               {generatedImage ? (
-                 <Image 
-                   source={generatedImage} 
-                   className="page__generated-design"
-                   style={{ width: '100%', height: '100%', resizeMode: 'contain' }} 
-                 />
-               ) : (
-                 <View className="page__design-placeholder border-2 border-dashed border-gray-400/50 rounded-lg w-full h-full items-center justify-center bg-white/10 backdrop-blur-sm">
-                    <Text className="text-[10px] text-gray-500 font-bold uppercase tracking-widest opacity-60 text-center px-2">
-                      Área de Design
-                    </Text>
-                 </View>
-               )}
-            </DraggableResizableDesign>
+            
+            {/* Design Layers Loop */}
+            {layers.filter(l => l.side === currentSide).map((layer) => (
+                <DraggableResizableDesign 
+                    key={layer.id}
+                    initialSize={150}
+                    label={layer.label}
+                    isPlacing={layer.isPlacing}
+                    isSelected={activeLayerId === layer.id}
+                    onSelect={() => setActiveLayerId(layer.id)}
+                    onLock={() => handleLockLayer(layer.id)}
+                >
+                   {layer.image ? (
+                     <Image 
+                       source={layer.image} 
+                       className="page__generated-design"
+                       style={{ width: '100%', height: '100%', resizeMode: 'contain' }} 
+                     />
+                   ) : (
+                     <View className="page__design-placeholder border-2 border-dashed border-gray-400/50 rounded-lg w-full h-full items-center justify-center bg-white/10 backdrop-blur-sm">
+                        <Text className="text-[10px] text-gray-500 font-bold uppercase tracking-widest opacity-60 text-center px-2">
+                          {layer.isPlacing ? "Posiciona e Toca 2x" : "Área Vazia - Toca para editar"}
+                        </Text>
+                     </View>
+                   )}
+                </DraggableResizableDesign>
+            ))}
           </View>
         </View>
 
@@ -268,7 +383,25 @@ export default function Page() {
         >
           <ExamplesGallery 
             onSelect={(img) => {
-              setGeneratedImage(img);
+              // Same logic as generate: find active or create new
+              let targetId = activeLayerId;
+              if (!targetId) {
+                  const newId = Date.now().toString();
+                  const countOnSide = layers.filter(l => l.side === currentSide).length;
+                  const newLayer: DesignLayer = {
+                      id: newId,
+                      side: currentSide,
+                      image: null,
+                      isPlacing: false,
+                      label: `Desenho ${countOnSide + 1}`
+                  };
+                  setLayers(prev => [...prev, newLayer]);
+                  targetId = newId;
+                  setActiveLayerId(newId);
+              }
+
+              // Update layer
+              setLayers(prev => prev.map(l => l.id === targetId ? { ...l, image: img } : l));
               setActiveModal(null);
             }} 
           />
@@ -285,7 +418,7 @@ export default function Page() {
             onUpload={() => console.log("Upload pressed")} 
             onGenerate={handleGenerateDesign}
             isGenerating={isGenerating}
-            previewImage={generatedImage}
+            previewImage={layers.find(l => l.id === activeLayerId)?.image}
           />
         </CornerModal>
 
