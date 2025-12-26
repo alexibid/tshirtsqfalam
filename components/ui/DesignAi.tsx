@@ -10,7 +10,7 @@ interface DesignLayer {
   originalPrompt?: string;
 }
 
-interface DesignUploaderProps {
+interface DesignAiProps {
   onUpload: () => void;
   onGenerate: (prompt: string) => void;
   isGenerating?: boolean;
@@ -21,14 +21,14 @@ interface DesignUploaderProps {
   onSelectLayer: (id: string) => void;
 }
 
-export function DesignUploader({ 
+export function DesignAi({ 
   onUpload, 
   onGenerate, 
   isGenerating = false,
   layers = [],
   activeLayerId,
   onSelectLayer,
-}: DesignUploaderProps) {
+}: DesignAiProps) {
   
   const [isExpanded, setIsExpanded] = useState(false);
   const activeLayer = layers.find(l => l.id === activeLayerId);
@@ -54,8 +54,8 @@ export function DesignUploader({
             onRequestClose={() => setIsExpanded(false)}
         >
             {/* Backdrop / Container ensuring insets */}
-            <View className="flex-1 bg-black/80" style={{ paddingVertical: 8, paddingHorizontal: 4 }}>
-                <View className="flex-1 bg-white rounded-[30px] overflow-hidden relative items-center justify-center">
+            <View className="generator__modal-backdrop flex-1 bg-black/80" style={{ paddingVertical: 8, paddingHorizontal: 4 }}>
+                <View className="generator__modal-content flex-1 bg-white rounded-[30px] overflow-hidden relative items-center justify-center">
                     
                     {/* Full Image */}
                      {activeLayer?.image && (

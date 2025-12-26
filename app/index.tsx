@@ -6,7 +6,7 @@ import { Navigation } from "../components/ui/Navigation";
 import { CornerModal } from "../components/ui/CornerModal";
 import { ColorPicker } from "../components/ui/ColorPicker";
 import { GarmentSelector } from "../components/ui/GarmentSelector";
-import { DesignUploader } from "../components/ui/DesignUploader";
+import { DesignAi } from "../components/ui/DesignAi";
 import { ExamplesGallery } from "../components/ui/ExamplesGallery";
 import { LogOut } from "lucide-react-native";
 
@@ -323,29 +323,29 @@ export default function Page() {
         >
           {session ? (
             <View className="page__account w-full items-center justify-center flex-1">
-               <View className="w-24 h-24 rounded-full overflow-hidden mb-6 border-4 border-gray-100 shadow-sm">
+               <View className="page__avatar-wrapper w-24 h-24 rounded-full overflow-hidden mb-6 border-4 border-gray-100 shadow-sm">
                  {session.user.user_metadata.avatar_url ? (
-                   <Image source={{ uri: session.user.user_metadata.avatar_url }} className="w-full h-full" />
+                   <Image source={{ uri: session.user.user_metadata.avatar_url }} className="page__avatar-image w-full h-full" />
                  ) : (
-                   <View className="w-full h-full bg-gray-200 items-center justify-center">
-                     <Text className="text-3xl font-bold text-gray-500">{session.user.email?.charAt(0).toUpperCase()}</Text>
+                   <View className="page__avatar-placeholder w-full h-full bg-gray-200 items-center justify-center">
+                     <Text className="page__avatar-initial text-3xl font-bold text-gray-500">{session.user.email?.charAt(0).toUpperCase()}</Text>
                    </View>
                  )}
                </View>
-               <Text className="text-2xl font-bold mb-2 text-center text-gray-900">{session.user.user_metadata.full_name || "Olá!"}</Text>
-               <Text className="text-gray-500 text-base mb-8 text-center">{session.user.email}</Text>
+               <Text className="page__account-name text-2xl font-bold mb-2 text-center text-gray-900">{session.user.user_metadata.full_name || "Olá!"}</Text>
+               <Text className="page__account-email text-gray-500 text-base mb-8 text-center">{session.user.email}</Text>
                
                <TouchableOpacity 
                  onPress={handleLogout}
-                 className="bg-red-50 px-8 py-4 rounded-2xl flex-row items-center gap-3 border border-red-100 active:bg-red-100 transition-colors w-full max-w-xs justify-center"
+                 className="page__logout-btn bg-red-50 px-8 py-4 rounded-2xl flex-row items-center gap-3 border border-red-100 active:bg-red-100 transition-colors w-full max-w-xs justify-center"
                >
                   <LogOut size={20} color="#ef4444" />
-                  <Text className="text-red-500 font-bold text-base">Terminar Sessão</Text>
+                  <Text className="page__logout-text text-red-500 font-bold text-base">Terminar Sessão</Text>
                </TouchableOpacity>
             </View>
           ) : (
             <View className="page__login w-full max-w-xs mx-auto flex-col gap-4 justify-center flex-1">
-              <Text className="text-gray-500 text-center mb-4 leading-relaxed">
+              <Text className="page__login-intro text-gray-500 text-center mb-4 leading-relaxed">
                 Entre para guardar os seus designs e aceder ao histórico de compras.
               </Text>
               
@@ -353,19 +353,19 @@ export default function Page() {
               <TouchableOpacity 
                 onPress={handleGoogleLogin}
                 disabled={loading}
-                className="bg-white border border-gray-200 rounded-2xl p-4 flex-row items-center px-6 gap-4 shadow-sm active:scale-95 transition-all"
+                className="page__login-btn page__login-btn--google bg-white border border-gray-200 rounded-2xl p-4 flex-row items-center px-6 gap-4 shadow-sm active:scale-95 transition-all"
               >
                  <Image 
                    source={{ uri: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/480px-Google_%22G%22_logo.svg.png" }} 
-                   className="w-6 h-6" 
+                   className="page__login-icon w-6 h-6" 
                    resizeMode="contain"
                  />
-                 <Text className="font-bold text-gray-800 text-base flex-1 text-center">
+                 <Text className="page__login-btn-text font-bold text-gray-800 text-base flex-1 text-center">
                    {loading ? "A carregar..." : "Continuar com Google"}
                  </Text>
               </TouchableOpacity>
 
-              <View className="flex-row items-center gap-4 my-2 opacity-50">
+              <View className="page__login-divider flex-row items-center gap-4 my-2 opacity-50">
                  <View className="h-[1px] bg-gray-300 flex-1" />
                  <Text className="text-xs font-semibold text-gray-400">OU</Text>
                  <View className="h-[1px] bg-gray-300 flex-1" />
@@ -373,28 +373,28 @@ export default function Page() {
 
               {/* Instagram (Mock) */}
               <TouchableOpacity 
-                className="bg-purple-50 border border-purple-100 rounded-2xl p-4 flex-row items-center px-6 gap-4 active:scale-95 transition-all"
+                className="page__login-btn page__login-btn--instagram bg-purple-50 border border-purple-100 rounded-2xl p-4 flex-row items-center px-6 gap-4 active:scale-95 transition-all"
                 onPress={() => alert("Login com Instagram em breve!")}
               >
                  <Image 
                    source={{ uri: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Instagram_icon.png/600px-Instagram_icon.png" }} 
-                   className="w-6 h-6" 
+                   className="page__login-icon w-6 h-6" 
                    resizeMode="contain"
                  />
-                 <Text className="font-bold text-purple-700 text-base flex-1 text-center">Instagram</Text>
+                 <Text className="page__login-btn-text font-bold text-purple-700 text-base flex-1 text-center">Instagram</Text>
               </TouchableOpacity>
 
               {/* WhatsApp (Mock) */}
                <TouchableOpacity 
-                className="bg-green-50 border border-green-100 rounded-2xl p-4 flex-row items-center px-6 gap-4 active:scale-95 transition-all"
+                className="page__login-btn page__login-btn--whatsapp bg-green-50 border border-green-100 rounded-2xl p-4 flex-row items-center px-6 gap-4 active:scale-95 transition-all"
                 onPress={() => alert("Login com WhatsApp em breve!")}
               >
                  <Image 
                    source={{ uri: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/600px-WhatsApp.svg.png" }} 
-                   className="w-6 h-6" 
+                   className="page__login-icon w-6 h-6" 
                    resizeMode="contain"
                  />
-                 <Text className="font-bold text-green-700 text-base flex-1 text-center">WhatsApp</Text>
+                 <Text className="page__login-btn-text font-bold text-green-700 text-base flex-1 text-center">WhatsApp</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -455,7 +455,7 @@ export default function Page() {
           position="bottom-left"
           title="Criar Desenho"
         >
-          <DesignUploader 
+          <DesignAi 
             onUpload={() => console.log("Upload pressed")} 
             onGenerate={handleGenerateDesign}
             isGenerating={isGenerating}

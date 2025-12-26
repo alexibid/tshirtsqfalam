@@ -128,7 +128,7 @@ export function CornerModal({ visible, onClose, position, children, title }: Cor
 
             {/* Title - Static at top of content flow, but pushed down by paddingTop */}
             {title && (
-              <View className="absolute top-8 left-8 right-16 justify-center">
+              <View className="modal__header-wrapper absolute top-8 left-8 right-16 justify-center">
                  <Text className="modal__title text-3xl font-black uppercase tracking-tighter text-black" numberOfLines={1} adjustsFontSizeToFit>
                    {title}
                  </Text>
