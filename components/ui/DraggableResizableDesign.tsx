@@ -103,6 +103,7 @@ export function DraggableResizableDesign({
 
   return (
       <Animated.View 
+        className="design-layer"
         style={[
           animatedStyle, 
           { 
@@ -123,7 +124,7 @@ export function DraggableResizableDesign({
       >
         <GestureDetector gesture={composedMain}>
             <View 
-                className={`w-full h-full rounded-lg overflow-visible relative transition-all ${
+                className={`design-layer__content w-full h-full rounded-lg overflow-visible relative transition-all ${
                     isSelected 
                         ? "border-2 border-dashed border-blue-400/80 bg-blue-50/10" 
                         : "border border-transparent"
@@ -132,7 +133,7 @@ export function DraggableResizableDesign({
             >
                 {/* Label (e.g. #1) */}
                 {label && (
-                    <View className="absolute -top-6 left-0 bg-black/60 px-2 py-1 rounded">
+                    <View className="design-layer__label absolute -top-6 left-0 bg-black/60 px-2 py-1 rounded">
                         <Text className="text-white text-[10px] font-bold">{label}</Text>
                     </View>
                 )}
@@ -146,7 +147,7 @@ export function DraggableResizableDesign({
         {isSelected && !isPlacing && (
             <GestureDetector gesture={resizeHandleGesture}>
             <View 
-                className="absolute -bottom-3 -right-3 w-8 h-8 items-center justify-center z-50 rounded-full"
+                className="design-layer__handle absolute -bottom-3 -right-3 w-8 h-8 items-center justify-center z-50 rounded-full"
                 // containerStyle={{ zIndex: 50 }} 
                 style={Platform.OS === 'web' ? { cursor: 'nwse-resize' } as any : {}}
             >

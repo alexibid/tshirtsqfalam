@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { View, Image, Text, TouchableOpacity } from "react-native";
+import { View, Image, Text, TouchableOpacity, useWindowDimensions } from "react-native";
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabase";
 import { Navigation } from "../components/ui/Navigation";
@@ -30,6 +30,15 @@ interface DesignLayer {
 }
 
 export default function Page() {
+  // Responsive Design Logic
+  const { width } = useWindowDimensions();
+  const MAX_PREVIEW_WIDTH = 575;
+  const BASE_DESIGN_SIZE = 175;
+  
+  // Calculate responsive size: (Current Width / Max Width) * Base Size
+  const effectiveWidth = Math.min(width, MAX_PREVIEW_WIDTH);
+  const responsiveDesignSize = (effectiveWidth / MAX_PREVIEW_WIDTH) * BASE_DESIGN_SIZE;
+
   const [activeModal, setActiveModal] = useState<"account" | "select" | "create" | "order" | "gallery" | null>(null);
   // Auth State
   const [session, setSession] = useState<Session | null>(null);
@@ -176,91 +185,15 @@ export default function Page() {
       setLayers(prev => prev.map(l => l.id === targetId ? { ...l, image: mockImage } : l));
       setIsGenerating(false);
       // Close modal if open?
-      setActiveModal(null); 
+      // setActiveModal(null);  <-- User requested to keep open
     }, 2000);
   };
 
   return (
-      <View className="page flex-1 bg-white items-center relative">
+      <View className="page flex-1 bg-white items-center relative overflow-hidden">
       <View className="page__container flex-1 w-full h-full max-w-screen-md relative">
         
-        {/* Footer */}
-        <View className="page__footer absolute bottom-6 left-0 right-0 items-center z-40" style={{ marginBottom: 25 }}>
-          {/* ... */}
-        </View>
-
-        {/* Main Content Area - Garment Preview */}
-        <View className="page__preview absolute inset-0 items-center justify-center z-0 pointer-events-none">
-          <View className="page__preview-content w-[80%] h-[60%] items-center justify-center relative pointer-events-auto">
-            
-            {/* TOP CONTROLS: Toggle Side + Add Layer */}
-            <View className="absolute top-0 z-50 pointer-events-auto -translate-y-12 flex-row items-center gap-3">
-               {/* Toggle Pill - Shows DESTINATION */}
-               <TouchableOpacity 
-                 onPress={() => setCurrentSide(prev => prev === 'front' ? 'back' : 'front')}
-                 className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-full shadow-sm border border-gray-200 flex-row items-center gap-2"
-               >
-                 {/* Icon shows Destination Garment */}
-                 <View className="w-4 h-4 items-center justify-center">
-                    {(() => {
-                        const TargetIcon = GARMENT_ASSETS[selectedGarment][currentSide === 'front' ? 'back' : 'front'];
-                        return <TargetIcon width={16} height={16} color="#4b5563" />;
-                    })()}
-                 </View>
-                 <Text className="text-[10px] font-bold text-gray-700 uppercase tracking-widest">
-                    {currentSide === 'front' ? 'COSTAS' : 'FRENTE'}
-                 </Text>
-               </TouchableOpacity>
-
-               {/* Add Layer Button */}
-               <TouchableOpacity 
-                 onPress={handleAddLayer}
-                 className="bg-black px-4 py-2 rounded-full shadow-sm flex-row items-center gap-2 active:scale-95 transition-transform"
-               >
-                 <Text className="text-white text-lg font-light leading-none mb-[2px]">+</Text>
-                 <Text className="text-[10px] font-bold text-white uppercase tracking-widest">
-                    Desenho
-                 </Text>
-               </TouchableOpacity>
-            </View>
-
-            <CurrentGarment 
-              width="100%" 
-              height="100%" 
-              style={{ position: 'absolute' }}
-              color={selectedColor}
-            />
-            
-            {/* Design Layers Loop */}
-            {layers.filter(l => l.side === currentSide).map((layer) => (
-                <DraggableResizableDesign 
-                    key={layer.id}
-                    initialSize={150}
-                    label={layer.label}
-                    isPlacing={layer.isPlacing}
-                    isSelected={activeLayerId === layer.id}
-                    onSelect={() => setActiveLayerId(layer.id)}
-                    onLock={() => handleLockLayer(layer.id)}
-                >
-                   {layer.image ? (
-                     <Image 
-                       source={layer.image} 
-                       className="page__generated-design"
-                       style={{ width: '100%', height: '100%', resizeMode: 'contain' }} 
-                     />
-                   ) : (
-                     <View className="page__design-placeholder border-2 border-dashed border-gray-400/50 rounded-lg w-full h-full items-center justify-center bg-white/10 backdrop-blur-sm">
-                        <Text className="text-[10px] text-gray-500 font-bold uppercase tracking-widest opacity-60 text-center px-2">
-                          {layer.isPlacing ? "Posiciona e Toca 2x" : "Área Vazia - Toca para editar"}
-                        </Text>
-                     </View>
-                   )}
-                </DraggableResizableDesign>
-            ))}
-          </View>
-        </View>
-
-
+        {/* Navigation (Rendered First as requested) */}
         <Navigation 
           onAccountPress={() => setActiveModal("account")}
           onSelectPress={() => setActiveModal("select")}
@@ -272,6 +205,114 @@ export default function Page() {
           selectedGarment={selectedGarment}
           selectedColor={selectedColor}
         />
+
+        {/* Main Content Area - Garment Preview */}
+        {/* Changed from absolute inset-0 to flex-1 with padding to respect Nav/Footer areas */}
+        <View className="page__preview flex-1 w-full items-center justify-center z-0 pt-32 pb-24 pointer-events-none">
+          <View className="page__preview-content w-full flex-1 items-center justify-center relative pointer-events-auto max-w-[575px] p-2">
+            
+            {/* TOP CONTROLS: Toggle Side + Add Layer */}
+            <View className="page__controls absolute top-4 z-50 pointer-events-auto flex-row items-center gap-3">
+               {/* Toggle Pill - Shows DESTINATION */}
+               <TouchableOpacity 
+                 onPress={() => setCurrentSide(prev => prev === 'front' ? 'back' : 'front')}
+                 className="page__toggle bg-white/90 backdrop-blur-md px-4 py-2 rounded-full shadow-sm border border-gray-200 flex-row items-center gap-2"
+               >
+                 {/* Icon shows Destination Garment */}
+                 <View className="page__toggle-icon w-4 h-4 items-center justify-center">
+                    {(() => {
+                        const TargetIcon = GARMENT_ASSETS[selectedGarment][currentSide === 'front' ? 'back' : 'front'];
+                        return <TargetIcon width={16} height={16} color="#4b5563" />;
+                    })()}
+                 </View>
+                 <Text className="page__toggle-text text-[10px] font-bold text-gray-700 uppercase tracking-widest">
+                    {currentSide === 'front' ? 'COSTAS' : 'FRENTE'}
+                 </Text>
+               </TouchableOpacity>
+
+               {/* Add Layer Button */}
+               <TouchableOpacity 
+                 onPress={handleAddLayer}
+                 className="page__add-btn bg-black px-4 py-2 rounded-full shadow-sm flex-row items-center gap-2 active:scale-95 transition-transform"
+               >
+                 <Text className="page__add-symbol text-white text-lg font-light leading-none mb-[2px]">+</Text>
+                 <Text className="page__add-text text-[10px] font-bold text-white uppercase tracking-widest">
+                    Desenho
+                 </Text>
+               </TouchableOpacity>
+            </View>
+
+            <View className="relative w-full h-full items-center justify-center">
+              <CurrentGarment 
+                width="100%" 
+                height="100%" 
+                style={{ position: 'absolute', overflow: 'visible' }}
+                color={selectedColor}
+              />
+              
+              {/* Design Layers Loop */}
+              {layers.filter(l => l.side === currentSide).map((layer) => (
+                  <DraggableResizableDesign 
+                      key={layer.id}
+                      initialSize={responsiveDesignSize}
+                      label={layer.label}
+                      isPlacing={layer.isPlacing}
+                      isSelected={activeLayerId === layer.id}
+                      onSelect={() => setActiveLayerId(layer.id)}
+                      onLock={() => handleLockLayer(layer.id)}
+                  >
+                    {layer.image ? (
+                        <Image 
+                          source={layer.image} 
+                          className="page__design-image w-full h-full"
+                          style={{ width: '100%', height: '100%', resizeMode: 'contain' }} 
+                        />
+                      ) : (
+                        <View className="page__design-placeholder border-2 border-dashed border-gray-400/50 rounded-lg w-full h-full items-center justify-center bg-white/10 backdrop-blur-sm">
+                          <Text className="page__design-text text-[10px] text-gray-500 font-bold uppercase tracking-widest opacity-60 text-center px-2">
+                            {layer.isPlacing ? "Posiciona e Toca 2x" : "Área Vazia - Toca para editar"}
+                          </Text>
+                        </View>
+                      )}
+                  </DraggableResizableDesign>
+              ))}
+            </View>
+          </View>
+        </View>
+
+        {/* Footer */}
+        <View className="page__footer absolute bottom-6 left-0 right-0 items-center z-40" style={{ pointerEvents: 'box-none' }}>
+           <View className="page__footer-links flex-row gap-6 opacity-40">
+              <TouchableOpacity onPress={() => alert("Sobre")}>
+                <Text className="page__footer-link text-[10px] font-bold uppercase tracking-widest">Sobre</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => alert("Termos")}>
+                <Text className="page__footer-link text-[10px] font-bold uppercase tracking-widest">Termos</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => alert("Privacidade")}>
+                <Text className="page__footer-link text-[10px] font-bold uppercase tracking-widest">Privacidade</Text>
+              </TouchableOpacity>
+           </View>
+           
+           <View className="page__footer-copyright flex-row items-center gap-2 mt-4">
+             <Image 
+                source={require("../assets/logo.png")} 
+                style={{ width: 16, height: 16, opacity: 0.6 }}
+                resizeMode="contain" 
+             />
+             <Text className="text-xs text-gray-500 font-medium">
+               {new Date().getFullYear()}
+             </Text>
+           </View>
+
+           <Text 
+             accessibilityRole="header" 
+             aria-level={1}
+             className="page__footer-h1 text-xs text-gray-900 font-bold mt-1 text-center px-4"
+           >
+             T'Shirts Q'Falam - Crie a sua T-shirt Personalizada com AI
+           </Text>
+        </View>
 
         {/* Account Modal (Top Left) */}
         <CornerModal
@@ -412,13 +453,16 @@ export default function Page() {
           visible={activeModal === "create"}
           onClose={handleClose}
           position="bottom-left"
-          title="Criar Design"
+          title="Criar Desenho"
         >
           <DesignUploader 
             onUpload={() => console.log("Upload pressed")} 
             onGenerate={handleGenerateDesign}
             isGenerating={isGenerating}
-            previewImage={layers.find(l => l.id === activeLayerId)?.image}
+            // Carousel Wiring
+            layers={layers.filter(l => l.side === currentSide)}
+            activeLayerId={activeLayerId}
+            onSelectLayer={setActiveLayerId}
           />
         </CornerModal>
 
@@ -429,8 +473,8 @@ export default function Page() {
           position="bottom-right"
           title="O Seu Carrinho"
         >
-          <View className="items-center justify-center py-8">
-            <Text className="text-gray-400">O seu carrinho está vazio.</Text>
+          <View className="page__cart-empty items-center justify-center py-8">
+            <Text className="page__cart-text text-gray-400">O seu carrinho está vazio.</Text>
           </View>
         </CornerModal>
         </View>

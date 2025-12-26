@@ -1,4 +1,4 @@
-import { View, TouchableOpacity, Image, Text, Animated, Easing } from "react-native";
+import { View, TouchableOpacity, Image, Text, Animated, Easing, useWindowDimensions } from "react-native";
 import { User as UserIcon, Shirt, Wand2, ShoppingCart } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
 import { User } from "@supabase/supabase-js";
@@ -37,6 +37,9 @@ export function Navigation({
 
   const iconSize = 24;
   const iconColor = "#000000";
+  const { width } = useWindowDimensions();
+  // Responsive Logo Size logic as requested: 64px (<420px) -> 72px (>420px)
+  const logoSize = width > 420 ? 72 : 56;
 
   // Dynamic values
   const userAvatar = user?.user_metadata?.avatar_url;
@@ -83,8 +86,8 @@ export function Navigation({
 
 
 
-  const wrapStyle = "items-center justify-center w-20 h-20"; 
-  const anchorStyle = "relative w-14 h-14"; // Exact button size anchor
+  const wrapStyle = "items-center justify-center w-16 h-16 min-[420px]:w-20 min-[420px]:h-20"; 
+  const anchorStyle = "relative w-12 h-12 min-[420px]:w-16 min-[420px]:h-16"; // Mobile 3rem -> Desktop 4rem
 
   // Tutorial Overlay Component with BEM Naming
   const TutorialOverlay = ({ index, label, number }: { index: number, label: string, number: string }) => {
@@ -162,36 +165,24 @@ export function Navigation({
 
       {/* 3. Logo (Gallery) */}
       <View className={`nav__item ${wrapStyle}`}>
-         {/* 
-            Standardized Anchor: 56x56 (w-14 h-14).
-         */}
          <View className={`nav__anchor ${anchorStyle}`}>
              {/* Logo Button */}
              <TouchableOpacity 
               onPress={onLogoPress}
               className={`nav__button nav__button--logo absolute inset-0 items-center justify-center active:scale-95 transition-all ${getHighlightClass("logo")}`}
-              style={{ overflow: 'visible' }} 
             >
-               {/* Semantic H1 for SEO */}
-               <View className="absolute inset-0 opacity-0 overflow-hidden w-[1px] h-[1px]">
-                 <Text 
-                   accessibilityRole="header" 
-                   aria-level={1}
-                   className="sr-only"
-                 >
-                   T'Shirts Q'Falam - Crie a sua T-shirt Personalizada com AI
-                 </Text>
-               </View>
 
-               {/* Image is larger than the 56px anchor, centered by flex/absolute */}
+
                <Image 
                   source={require("../../assets/logo.png")} 
-                  style={{ width: 72, height: 72, resizeMode: "contain" }}
+                  className="nav__logo-image"
+                  style={{ width: logoSize, height: logoSize }}
                 />
             </TouchableOpacity>
             <TutorialOverlay index={2} number="3º" label="IDEIAS" />
          </View>
       </View>
+      
 
       {/* 4. Create */}
       <View className={`nav__item ${wrapStyle}`}>

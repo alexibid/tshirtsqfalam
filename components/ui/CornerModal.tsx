@@ -110,9 +110,9 @@ export function CornerModal({ visible, onClose, position, children, title }: Cor
               shadowRadius: 15,
               elevation: 10,
               position: 'relative',
-              paddingHorizontal: 32, // Horizontal padding for all content
-              paddingTop: 80, // Push content down to clear Close Button area (Top-6 is ~24px + 40px height) + Spacing
-              paddingBottom: 32, // Bottom padding
+              paddingHorizontal: 16, // Reduced to 16px as requested
+              paddingTop: 80, 
+              paddingBottom: 32, 
             }}
             pointerEvents="auto"
          >
@@ -136,7 +136,7 @@ export function CornerModal({ visible, onClose, position, children, title }: Cor
             )}
 
             {/* Content Container - Vertically Centered */}
-            <View className="modal__body flex-1 w-full justify-center">
+            <View className="modal__body flex-1 w-full justify-center z-[70]">
                {children}
             </View>
          </Animated.View>

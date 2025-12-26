@@ -18,14 +18,14 @@ export function ColorPicker({ selectedColor, onSelectColor }: ColorPickerProps) 
   ];
 
   return (
-    <View className="flex-col gap-4">
-      <Text className="text-gray-500 font-medium mb-1 text-center">Selecionar Cor Base</Text>
-      <View className="flex-row flex-wrap gap-3">
+    <View className="color-picker flex-col gap-4">
+      <Text className="color-picker__title text-gray-500 font-medium mb-1 text-center">Selecionar Cor Base</Text>
+      <View className="color-picker__list flex-row flex-wrap gap-3">
         {colors.map((color) => (
           <TouchableOpacity
             key={color}
             onPress={() => onSelectColor(color)}
-            className={`w-10 h-10 rounded-full border-2 ${selectedColor === color ? 'border-black scale-110' : 'border-gray-200'} shadow-sm`}
+            className={`color-picker__swatch w-10 h-10 rounded-full border-2 ${selectedColor === color ? 'border-black scale-110' : 'border-gray-200'} shadow-sm`}
             style={{ backgroundColor: color }}
           />
         ))}
