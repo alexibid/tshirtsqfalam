@@ -1,4 +1,3 @@
-
 import { View, TouchableOpacity, Text } from "react-native";
 import { ColorPicker } from "./ColorPicker";
 
@@ -30,7 +29,6 @@ export function GarmentSelector({
 
   return (
     <View className="selector flex-col gap-6">
-      {/* Garment Type Selection */}
       <View className="selector__type-section w-full flex-1 items-center justify-center">
         <Text className="selector__label text-gray-500 font-medium mb-3">Selecionar Tipo</Text>
         <View className="selector__list flex-row justify-center gap-4">
@@ -44,7 +42,6 @@ export function GarmentSelector({
                   : "border-gray-100 bg-white hover:border-gray-200"
               }`}
             >
-              {/* Custom Radio Button Indicator - Top Right */}
               <View className="selector__indicator absolute top-2 right-2 z-10">
                 <View className={`w-4 h-4 rounded-full border border-gray-300 items-center justify-center bg-white ${selectedGarment === item.type ? "border-black" : ""}`}>
                   {selectedGarment === item.type && <View className="w-2 h-2 rounded-full bg-black" />}
@@ -55,7 +52,7 @@ export function GarmentSelector({
                 width="100%" 
                 height={60} 
                 style={{ marginBottom: 4, opacity: selectedGarment === item.type ? 1 : 0.6 }} 
-                color={selectedColor} // Pass color to preview!
+                color={selectedColor}
               />
               <Text className={`selector__item-label text-[10px] font-semibold ${selectedGarment === item.type ? "text-black" : "text-gray-400"}`}>
                 {item.label}
@@ -65,7 +62,6 @@ export function GarmentSelector({
         </View>
       </View>
 
-      {/* Color Selection (Existing Component) */}
       <View className="selector__colors border-t border-gray-100 pt-6">
         <ColorPicker selectedColor={selectedColor} onSelectColor={onSelectColor} />
       </View>

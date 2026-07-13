@@ -5,7 +5,6 @@ const examples = [
   require("../../assets/examples/ex2.png"),
   require("../../assets/examples/ex3.png"),
   require("../../assets/examples/ex4.png"),
-  // Add more as needed or duplicate for demo
   require("../../assets/examples/ex1.png"),
   require("../../assets/examples/ex2.png"),
 ];
@@ -27,19 +26,19 @@ export function ExamplesGallery({ onSelect }: ExamplesGalleryProps) {
         showsVerticalScrollIndicator={false}
       >
         <View className="gallery__grid flex-row flex-wrap justify-between gap-y-4">
-           {examples.map((img, index) => (
-             <TouchableOpacity 
-                key={index} 
-                className="gallery__item w-[48%] aspect-square bg-gray-50 rounded-xl overflow-hidden border border-gray-100 shadow-sm"
-                onPress={() => onSelect && onSelect(img)}
-             >
-               <Image 
-                 source={img} 
-                 className="gallery__image w-full h-full" 
-                 style={{ resizeMode: 'contain' }}
-               />
-             </TouchableOpacity>
-           ))}
+          {examples.map((img, index) => (
+            <TouchableOpacity 
+              key={index} 
+              className="gallery__item w-[48%] aspect-square bg-gray-50 rounded-xl overflow-hidden border border-gray-100 shadow-sm"
+              onPress={() => onSelect && onSelect(img)}
+            >
+              <Image 
+                source={img} 
+                className="gallery__image w-full h-full" 
+                style={{ resizeMode: 'contain' }}
+              />
+            </TouchableOpacity>
+          ))}
         </View>
       </ScrollView>
     </View>

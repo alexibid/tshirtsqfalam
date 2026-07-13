@@ -2,7 +2,6 @@ import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { Link } from "expo-router";
 
 export default function AdminDashboard() {
-  // Mock data for orders
   const orders = [
     { id: "ORD-001", status: "PAID", customer: "user@example.com", date: "2023-12-23" },
     { id: "ORD-002", status: "PENDING", customer: "test@test.com", date: "2023-12-23" },
@@ -51,13 +50,13 @@ export default function AdminDashboard() {
         </View>
 
         <View className="mt-8 mb-12">
-           <Text className="text-lg font-bold mb-4">Actions</Text>
-           <TouchableOpacity 
-             className="bg-black py-4 rounded-lg items-center active:bg-gray-800"
-             onPress={() => alert("Downloading Production Assets (Mock)...")}
-           >
-             <Text className="text-white font-bold">Download All Production Assets</Text>
-           </TouchableOpacity>
+          <Text className="text-lg font-bold mb-4">Actions</Text>
+          <TouchableOpacity 
+            className="bg-black py-4 rounded-lg items-center active:bg-gray-800"
+            onPress={() => alert("Downloading Production Assets...")}
+          >
+            <Text className="text-white font-bold">Download All Production Assets</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </View>

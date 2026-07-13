@@ -1,4 +1,3 @@
-
 import { View, TouchableOpacity, Text } from "react-native";
 
 interface ColorPickerProps {
@@ -8,13 +7,13 @@ interface ColorPickerProps {
 
 export function ColorPicker({ selectedColor, onSelectColor }: ColorPickerProps) {
   const colors = [
-    "#ffffff", // White
-    "#000000", // Black
-    "#ef4444", // Red
-    "#3b82f6", // Blue
-    "#22c55e", // Green
-    "#eab308", // Yellow
-    "#a855f7", // Purple
+    "#ffffff",
+    "#000000",
+    "#ef4444",
+    "#3b82f6",
+    "#22c55e",
+    "#eab308",
+    "#a855f7",
   ];
 
   return (

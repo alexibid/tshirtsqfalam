@@ -13,7 +13,7 @@ export function Scene({ textureUrl, shirtColor = "#ffffff" }: SceneProps) {
     <View className="flex-1 w-full h-full">
       <Canvas
         camera={{ position: [0, 0, 4], fov: 45 }}
-        style={{ backgroundColor: "#f9fafb" }} // gray-50 to match UI
+        style={{ backgroundColor: "#f9fafb" }}
       >
         <ambientLight intensity={0.5} />
         <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
