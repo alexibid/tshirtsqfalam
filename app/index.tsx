@@ -1,13 +1,11 @@
 import { useState, useEffect } from "react";
 import { View, Image, Text, TouchableOpacity, useWindowDimensions } from "react-native";
-import { useAuth } from "../hooks/useAuth";
 import { useDesignLayers } from "../hooks/useDesignLayers";
 import { Navigation } from "../components/ui/Navigation";
 import { CornerModal } from "../components/ui/CornerModal";
 import { GarmentSelector } from "../components/ui/GarmentSelector";
 import { DesignAi } from "../components/ui/DesignAi";
 import { ExamplesGallery } from "../components/ui/ExamplesGallery";
-import { LogOut } from "lucide-react-native";
 import { DraggableResizableDesign } from "../components/ui/DraggableResizableDesign";
 
 import TshirtFront from "../assets/tshirt_mockup.svg";
@@ -37,13 +35,12 @@ const GARMENT_ASSETS = {
 
 export default function Page() {
   const { width } = useWindowDimensions();
-  const [activeModal, setActiveModal] = useState<"account" | "select" | "create" | "order" | "gallery" | null>(null);
+  const [activeModal, setActiveModal] = useState<"select" | "create" | "order" | "gallery" | null>(null);
   
   const [selectedColor, setSelectedColor] = useState("#ffffff");
   const [selectedGarment, setSelectedGarment] = useState<"tshirt" | "sweatshirt" | "hoodie">("tshirt");
   const [currentSide, setCurrentSide] = useState<"front" | "back">("front");
 
-  const { user, loginWithGoogle, logout, loading } = useAuth();
   const {
     layers,
     activeLayerId,
@@ -70,13 +67,11 @@ export default function Page() {
     <View className="page flex-1 bg-white items-center relative overflow-hidden">
       <View className="page__container flex-1 w-full h-full max-w-screen-md relative">
         <Navigation 
-          onAccountPress={() => setActiveModal("account")}
           onSelectPress={() => setActiveModal("select")}
           onLogoPress={() => setActiveModal("gallery")}
           onCreatePress={() => setActiveModal("create")}
           onCheckoutPress={() => setActiveModal("order")}
           highlightedCorner={null}
-          user={user}
           selectedGarment={selectedGarment}
           selectedColor={selectedColor}
         />
@@ -179,94 +174,6 @@ export default function Page() {
             T'Shirts Q'Falam - Crie a sua T-shirt Personalizada com AI
           </Text>
         </View>
-
-        <CornerModal
-          visible={activeModal === "account"}
-          onClose={() => setActiveModal(null)}
-          position="top-left"
-          title={user ? "A Sua Conta" : "Login"}
-        >
-          {user ? (
-            <View className="page__account w-full items-center justify-center flex-1">
-              <View className="page__avatar-wrapper w-24 h-24 rounded-full overflow-hidden mb-6 border-4 border-gray-100 shadow-sm">
-                {user.user_metadata.avatar_url ? (
-                  <Image source={{ uri: user.user_metadata.avatar_url }} className="page__avatar-image w-full h-full" />
-                ) : (
-                  <View className="page__avatar-placeholder w-full h-full bg-gray-200 items-center justify-center">
-                    <Text className="page__avatar-initial text-3xl font-bold text-gray-500">
-                      {user.email?.charAt(0).toUpperCase()}
-                    </Text>
-                  </View>
-                )}
-              </View>
-              <Text className="page__account-name text-2xl font-bold mb-2 text-center text-gray-900">
-                {user.user_metadata.full_name || "Olá!"}
-              </Text>
-              <Text className="page__account-email text-gray-500 text-base mb-8 text-center">
-                {user.email}
-              </Text>
-              
-              <TouchableOpacity 
-                onPress={logout}
-                className="page__logout-btn bg-red-50 px-8 py-4 rounded-2xl flex-row items-center gap-3 border border-red-100 active:bg-red-100 transition-colors w-full max-w-xs justify-center"
-              >
-                <LogOut size={20} color="#ef4444" />
-                <Text className="page__logout-text text-red-500 font-bold text-base">Terminar Sessão</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <View className="page__login w-full max-w-xs mx-auto flex-col gap-4 justify-center flex-1">
-              <Text className="page__login-intro text-gray-500 text-center mb-4 leading-relaxed">
-                Entre para guardar os seus designs e aceder ao histórico de compras.
-              </Text>
-              
-              <TouchableOpacity 
-                onPress={loginWithGoogle}
-                disabled={loading}
-                className="page__login-btn page__login-btn--google bg-white border border-gray-200 rounded-2xl p-4 flex-row items-center px-6 gap-4 shadow-sm active:scale-95 transition-all"
-              >
-                <Image 
-                  source={{ uri: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/480px-Google_%22G%22_logo.svg.png" }} 
-                  className="page__login-icon w-6 h-6" 
-                  resizeMode="contain"
-                />
-                <Text className="page__login-btn-text font-bold text-gray-800 text-base flex-1 text-center">
-                  {loading ? "A carregar..." : "Continuar com Google"}
-                </Text>
-              </TouchableOpacity>
-
-              <View className="page__login-divider flex-row items-center gap-4 my-2 opacity-50">
-                <View className="h-[1px] bg-gray-300 flex-1" />
-                <Text className="text-xs font-semibold text-gray-400">OU</Text>
-                <View className="h-[1px] bg-gray-300 flex-1" />
-              </View>
-
-              <TouchableOpacity 
-                className="page__login-btn page__login-btn--instagram bg-purple-50 border border-purple-100 rounded-2xl p-4 flex-row items-center px-6 gap-4 active:scale-95 transition-all"
-                onPress={() => alert("Login com Instagram em breve!")}
-              >
-                <Image 
-                  source={{ uri: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Instagram_icon.png/600px-Instagram_icon.png" }} 
-                  className="page__login-icon w-6 h-6" 
-                  resizeMode="contain"
-                />
-                <Text className="page__login-btn-text font-bold text-purple-700 text-base flex-1 text-center">Instagram</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity 
-                className="page__login-btn page__login-btn--whatsapp bg-green-50 border border-green-100 rounded-2xl p-4 flex-row items-center px-6 gap-4 active:scale-95 transition-all"
-                onPress={() => alert("Login com WhatsApp em breve!")}
-              >
-                <Image 
-                  source={{ uri: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/600px-WhatsApp.svg.png" }} 
-                  className="page__login-icon w-6 h-6" 
-                  resizeMode="contain"
-                />
-                <Text className="page__login-btn-text font-bold text-green-700 text-base flex-1 text-center">WhatsApp</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-        </CornerModal>
 
         <CornerModal
           visible={activeModal === "select"}

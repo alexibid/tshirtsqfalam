@@ -12,7 +12,6 @@
     "@expo/metro-runtime": "~6.1.2",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.6.1",
-    "@supabase/supabase-js": "^2.89.0",
     "@types/three": "^0.182.0",
     "expo": "~54.0.30",
     "expo-asset": "^57.0.3",

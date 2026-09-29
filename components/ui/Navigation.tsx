@@ -1,29 +1,24 @@
 import { View, TouchableOpacity, Image, Text, Animated, Easing, useWindowDimensions } from "react-native";
-import { User as UserIcon, Shirt, Wand2, ShoppingCart } from "lucide-react-native";
+import { Shirt, Wand2, ShoppingCart } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
-import { User } from "@supabase/supabase-js";
 
 interface NavigationProps {
-  onAccountPress: () => void;
   onSelectPress: () => void;
   onLogoPress: () => void;
   onCreatePress: () => void;
   onCheckoutPress: () => void;
   hasDesign?: boolean;
-  highlightedCorner?: "account" | "select" | "logo" | "create" | "order" | null;
-  user: User | null;
+  highlightedCorner?: "select" | "logo" | "create" | "order" | null;
   selectedGarment: "tshirt" | "sweatshirt" | "hoodie";
   selectedColor: string;
 }
 
-export function Navigation({ 
-  onAccountPress, 
-  onSelectPress, 
+export function Navigation({
+  onSelectPress,
   onLogoPress,
   onCreatePress, 
   onCheckoutPress, 
   highlightedCorner,
-  user,
   selectedGarment,
   selectedColor
 }: NavigationProps) {
@@ -37,13 +32,11 @@ export function Navigation({
   const { width } = useWindowDimensions();
   const logoSize = width > 420 ? 72 : 56;
 
-  const userAvatar = user?.user_metadata?.avatar_url;
-  
   const garmentFill = selectedColor;
   const garmentStroke = selectedColor === "#ffffff" ? "#000000" : selectedColor;
 
   const [showTutorial, setShowTutorial] = useState(true);
-  const anims = useRef([...Array(5)].map(() => new Animated.Value(0))).current;
+  const anims = useRef([...Array(4)].map(() => new Animated.Value(0))).current;
 
   useEffect(() => {
     const createFadeSequence = () => {
@@ -77,7 +70,7 @@ export function Navigation({
   const TutorialOverlay = ({ index, label, number }: { index: number, label: string, number: string }) => {
     if (!showTutorial) return null;
 
-    const offsetClass = index === 2 ? "-left-7" : "-left-6";
+    const offsetClass = index === 1 ? "-left-7" : "-left-6";
     const numberClass = `nav__number absolute -top-2 ${offsetClass} text-2xl font-black text-gray-900 z-50`;
 
     return (
@@ -111,30 +104,13 @@ export function Navigation({
     <View className="nav absolute top-8 left-0 right-0 z-50 flex-row justify-evenly items-start px-2 w-full">
       <View className={`nav__item ${wrapStyle}`}>
         <View className={`nav__anchor ${anchorStyle}`}>
-          <TouchableOpacity 
-            className={`nav__button ${buttonStyle} ${getHighlightClass("account")}`}
-            onPress={onAccountPress}
-            style={{ overflow: 'hidden' }}
-          >
-            {userAvatar ? (
-              <Image source={{ uri: userAvatar }} className="w-full h-full" resizeMode="cover" />
-            ) : (
-              <UserIcon color={iconColor} size={iconSize} />
-            )}
-          </TouchableOpacity>
-          <TutorialOverlay index={0} number="1º" label="LOGIN" />
-        </View>
-      </View>
-
-      <View className={`nav__item ${wrapStyle}`}>
-        <View className={`nav__anchor ${anchorStyle}`}>
-          <TouchableOpacity 
+          <TouchableOpacity
             className={`nav__button ${buttonStyle} ${getHighlightClass("select")}`}
             onPress={onSelectPress}
           >
             <Shirt stroke={garmentStroke} fill={garmentFill} size={iconSize} />
           </TouchableOpacity>
-          <TutorialOverlay index={1} number="2º" label="SELECIONA" />
+          <TutorialOverlay index={0} number="1º" label="SELECIONA" />
         </View>
       </View>
 
@@ -150,7 +126,7 @@ export function Navigation({
               style={{ width: logoSize, height: logoSize }}
             />
           </TouchableOpacity>
-          <TutorialOverlay index={2} number="3º" label="IDEIAS" />
+          <TutorialOverlay index={1} number="2º" label="IDEIAS" />
         </View>
       </View>
 
@@ -162,7 +138,7 @@ export function Navigation({
           >
             <Wand2 color={iconColor} size={iconSize} />
           </TouchableOpacity>
-          <TutorialOverlay index={3} number="4º" label="AI DESIGN" />
+          <TutorialOverlay index={2} number="3º" label="AI DESIGN" />
         </View>
       </View>
 
@@ -174,7 +150,7 @@ export function Navigation({
           >
             <ShoppingCart color={iconColor} size={iconSize} />
           </TouchableOpacity>
-          <TutorialOverlay index={4} number="5º" label="ENTREGA" />
+          <TutorialOverlay index={3} number="4º" label="ENTREGA" />
         </View>
       </View>
     </View>
